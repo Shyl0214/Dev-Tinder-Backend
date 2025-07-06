@@ -17,8 +17,7 @@ app.use(
     console.log("log 3");
     next();
   },
-
-  (req, res, next) => {
+  (req, res) => {
     console.log("log 4");
     res.send("Hello 4 ");
   }
