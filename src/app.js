@@ -1,28 +1,20 @@
 const express = require("express");
 const app = express();
-const port = 7777;
 
-// routes
-app.use(
-  "/user",
-  (req, res, next) => {
-    console.log("log 1");
-    next();
-  },
-  (req, res, next) => {
-    console.log("log 2");
-    next();
-  },
-  (req, res, next) => {
-    console.log("log 3");
-    next();
-  },
-  (req, res) => {
-    console.log("log 4");
-    res.send("Hello 4 ");
-  }
-);
+const { adminAuth } = require("./middlewares/auth");
 
-app.listen(port, () => {
+app.get("/user", (req, res) => {
+  res.send("user data sent");
+});
+
+app.get("/admin/getAllData", adminAuth, (req, res) => {
+  res.send("All Data Sent");
+});
+
+app.get("/admin/deleteData", adminAuth, (req, res) => {
+  res.send("Deleted Data Successfully");
+});
+
+app.listen(7777, () => {
   console.log("Port is running successfully");
 });
