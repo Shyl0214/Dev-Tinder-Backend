@@ -5,7 +5,8 @@ This is the backend for the Dev-Tinder application. Built with Node.js , Express
 <!-- 
 1. install express
 2. install nodeMon
-3. 
+3. install mongoose
+4. 
 
 
 
