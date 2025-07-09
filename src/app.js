@@ -3,21 +3,26 @@ const { connectDB } = require("./config/database");
 const { userModel } = require("./models/user");
 const app = express();
 
+// this is a middleware which can convert the json obj to js object
+app.use(express.json());
+
 // post api call to add data in the database
 app.post("/signup", async (req, res) => {
   
+  console.log(req.body);
   // creating a new instance of the userModel
-  const user = new userModel({
-    firstName: "Shailesh",
-    lastName: "Singh",
-    email: "shaileshkumarsingh988@gmail.com",
-    password: "shailesh@123",
-  });
+  const user = new userModel(req.body);
 
-  user.save();
-  res.send("user data added successfully");
+  try {
+    await user.save();
+    res.status(201).send("User added successfully");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Something went wrong");
+  }
 });
 
+//Note : First connect Db and then start the server
 connectDB()
   .then(() => {
     console.log("DB Successfully connected");
