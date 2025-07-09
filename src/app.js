@@ -8,7 +8,6 @@ app.use(express.json());
 
 // post api call to add data in the database
 app.post("/signup", async (req, res) => {
-  
   console.log(req.body);
   // creating a new instance of the userModel
   const user = new userModel(req.body);
@@ -19,6 +18,21 @@ app.post("/signup", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Something went wrong");
+  }
+});
+
+// api to find user by email
+app.get("/user", async (req, res) => {
+  const userEmail = req.body.email;
+  try {
+    const findUser = await userModel.findOne({ email: userEmail });
+    if (!findUser) {
+      res.status(404).send("user not found");
+    } else {
+      res.send(findUser);
+    }
+  } catch (err) {
+    res.status(404).send("user not found");
   }
 });
 
