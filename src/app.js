@@ -50,6 +50,39 @@ app.get("/userAll", async (req, res) => {
   }
 });
 
+// api to find the user by its ID
+app.get("/findById", async (req, res) => {
+  const userID = req.body._id;
+  console.log(userID);
+
+  try {
+    const getUser = await userModel.find({ _id: userID });
+    if (!getUser) {
+      res.status(404).send("User not found");
+    } else {
+      res.send(getUser);
+    }
+  } catch (err) {
+    res.status(404).send("user not found");
+  }
+});
+
+// api to delete user using his id
+app.delete("/userDelete", async (req, res) => {
+  const userID = req.body._id;
+  console.log(userID);
+  try {
+    const userDelete = await userModel.findByIdAndDelete({ _id: userID });
+    if (!userDelete) {
+      res.send("user not found");
+    } else {
+      res.send("User deleted successfully")
+    }
+  } catch (err) {
+    res.status(404).send("user not found");
+  }
+});
+
 //Note : First connect Db and then start the server
 connectDB()
   .then(() => {
