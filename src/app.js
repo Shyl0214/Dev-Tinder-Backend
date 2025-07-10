@@ -21,7 +21,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// api to find user by email
+// api to find user by email in collection
 app.get("/user", async (req, res) => {
   const userEmail = req.body.email;
   try {
@@ -30,6 +30,20 @@ app.get("/user", async (req, res) => {
       res.status(404).send("user not found");
     } else {
       res.send(findUser);
+    }
+  } catch (err) {
+    res.status(404).send("user not found");
+  }
+});
+
+// api to find all users in collection
+app.get("/userAll", async (req, res) => {
+  try {
+    const findAllUsers = await userModel.find({});
+    if (!findAllUsers) {
+      res.status(404).send("Data not found");
+    } else {
+      res.send(findAllUsers);
     }
   } catch (err) {
     res.status(404).send("user not found");
