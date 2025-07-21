@@ -8,7 +8,6 @@ app.use(express.json());
 
 // post api call to add data in the database
 app.post("/signup", async (req, res) => {
-  console.log(req.body);
   // creating a new instance of the userModel
   const user = new userModel(req.body);
 
@@ -21,7 +20,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// api to find user by email in collection
+// get api to find user by email in collection
 app.get("/user", async (req, res) => {
   const userEmail = req.body.email;
   try {
@@ -36,7 +35,7 @@ app.get("/user", async (req, res) => {
   }
 });
 
-// api to find all users in collection
+// get api to find all users in collection
 app.get("/userAll", async (req, res) => {
   try {
     const findAllUsers = await userModel.find({});
@@ -46,40 +45,62 @@ app.get("/userAll", async (req, res) => {
       res.send(findAllUsers);
     }
   } catch (err) {
-    res.status(404).send("user not found");
+    res.status(404).send("User not found");
   }
 });
 
-// api to find the user by its ID
+// get api to find the user by its ID
 app.get("/findById", async (req, res) => {
   const userID = req.body._id;
-  console.log(userID);
 
   try {
-    const getUser = await userModel.find({ _id: userID });
-    if (!getUser) {
+    const getUserById = await userModel.find({ _id: userID });
+    if (!getUserById) {
       res.status(404).send("User not found");
     } else {
-      res.send(getUser);
+      res.send(getUserById);
     }
   } catch (err) {
     res.status(404).send("user not found");
   }
 });
 
-// api to delete user using his id
+// delete api to delete user using his id
 app.delete("/userDelete", async (req, res) => {
   const userID = req.body._id;
-  console.log(userID);
   try {
     const userDelete = await userModel.findByIdAndDelete({ _id: userID });
     if (!userDelete) {
       res.send("user not found");
     } else {
-      res.send("User deleted successfully")
+      res.send(userDelete);
     }
   } catch (err) {
     res.status(404).send("user not found");
+  }
+});
+
+// patch api to update the user details
+app.patch("/user", async (req, res) => {
+  const userId = req.body._id;
+  const data = req.body;
+  try {
+    const userUpdate = await userModel.findByIdAndUpdate(userId, data, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!userUpdate) {
+      res.status(400).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "User updated successfully",
+      data: userUpdate,
+    });
+    
+  } catch (err) {
+    res.send("something went wrong");
   }
 });
 
