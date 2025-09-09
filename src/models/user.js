@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-// creating a userSchema after mongoose
+// creating a userSchema after connecting DB
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
