@@ -1,11 +1,10 @@
-const { mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
-// this will return a promise
-const connectDB = async () => {
+async function connectDB() {
   await mongoose.connect(
-    "mongodb+srv://shaileshkumarsingh988:BmPkEM96VXHGrDr8@namastenode.j3xhbvc.mongodb.net/devTinder"
+    "mongodb+srv://shaileshkumarsingh988:shailesh@namastenode.j3xhbvc.mongodb.net/devTinder"
   );
-};
+}
 
 module.exports = {
   connectDB,
