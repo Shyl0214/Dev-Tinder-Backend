@@ -1,6 +1,6 @@
 const express = require("express");
 const { connectDB } = require("./config/database");
-const { User } = require("./models/user");
+const User = require("./models/user");
 
 const app = express();
 
@@ -11,64 +11,97 @@ app.get("/user", async (req, res) => {
   const userId = req.body._id;
   try {
     const user = await User.findById({ _id: userId });
-    res.send(user);
+    res.json(user);
   } catch (err) {
-    res.status(400).send("Error fetching user");
+    res.status(400).send(err.message);
   }
 });
 
-// find user by email
-// app.get("/user", async (req, res) => {
-//   const userMail = req.body.email;
-//   try {
-//     const user = await User.find({ email: userMail });
-//     res.send(user);
-//   } catch (err) {
-//     res.status(400).send("Error fetching user");
-//   }
-// });
-
-// find all user
+// find all users
 app.get("/feed", async (req, res) => {
   try {
-    const allUser = await User.find({});
-    res.send(allUser);
+    const allUsers = await User.find({});
+    res.json(allUsers);
   } catch (err) {
-    res.status(400).send("Error fetching user");
+    res.status(400).send("Error fetching users");
   }
 });
 
-app.post("/signup", async (req, res) => {
-  console.log(req.body);
-  const user = new User(req.body);
+// add user
+app.post("/signup", (req, res) => {
+  const body = req.body;
   try {
-    await user.save();
-    res.send("user added successfully");
+    const allowedFields = [
+      "firstName",
+      "lastName",
+      "email",
+      "password",
+      "age",
+      "gender",
+      "bio",
+      "profilePic",
+      "skills",
+    ];
+
+    for (const key of Object.keys(body)) {
+      if (!allowedFields.includes(key)) {
+        throw new Error(`Field ${key} is not allowed`);
+      }
+    }
+
+    const newUser = new User(body);
+    newUser.save();
+    res.send("User added successfully");
   } catch (err) {
-    res.status(400).send("Error adding user");
+    res.send(err.message);
   }
 });
 
-// delete user by id
+// delete user
 app.delete("/user", async (req, res) => {
-  const userId = req.body._id;
+  const userId = req.body.id;
   try {
     const user = await User.findByIdAndDelete({ _id: userId });
-    res.send(user);
+    if (!user) {
+      res.status(404).send("User not found");
+    } else {
+      res.json(user);
+    }
   } catch (err) {
-    res.status(400).send("Something was wrong");
+    res.status(400).send("Error deleting user");
   }
 });
 
-// update user by id
+//update user
 app.patch("/user", async (req, res) => {
   const userId = req.body._id;
   const body = req.body;
   try {
-    const user = await User.findByIdAndUpdate({ _id: userId }, body);
-    res.send(user);
+    const allowedFields = [
+      "firstName",
+      "lastName",
+      "password",
+      "age",
+      "gender",
+      "bio",
+      "profilePic",
+      "skills",
+    ];
+
+  
+    for (const key of Object.keys(body)) {
+      if (!allowedFields.includes(key) && key !== "_id") {
+        throw new Error(`Field ${key} is not allowed`);
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(userId, body, { new: true });
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    res.json(user);
   } catch (err) {
-    res.status(400).send("Something was wrong");
+    res.status(400).send(err.message);
   }
 });
 
