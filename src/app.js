@@ -1,6 +1,8 @@
 const express = require("express");
 const { connectDB } = require("./config/database");
 const User = require("./models/user");
+const { validateUserSingUp } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
@@ -10,10 +12,14 @@ app.use(express.json());
 app.get("/user", async (req, res) => {
   const userId = req.body._id;
   try {
-    const user = await User.findById({ _id: userId });
-    res.json(user);
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).send("User not found");
+    } else {
+      res.json(user);
+    }
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(400).send("Error fetching user");
   }
 });
 
@@ -28,32 +34,47 @@ app.get("/feed", async (req, res) => {
 });
 
 // add user
-app.post("/signup", (req, res) => {
-  const body = req.body;
+app.post("/signup", async (req, res) => {
   try {
-    const allowedFields = [
-      "firstName",
-      "lastName",
-      "email",
-      "password",
-      "age",
-      "gender",
-      "bio",
-      "profilePic",
-      "skills",
-    ];
+    // validate user
+    validateUserSingUp(req);
 
-    for (const key of Object.keys(body)) {
-      if (!allowedFields.includes(key)) {
-        throw new Error(`Field ${key} is not allowed`);
+    //hash the password
+    const { firstName, lastName, email, password } = req.body;
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    // create instance of the user
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashPassword,
+    });
+
+    // save the user
+    await user.save();
+    res.send("user added successfully");
+  } catch (err) {
+    res.status(400).send("Error" + err.message);
+  }
+});
+
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error("Invalid credentials");
+    } else {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        throw new Error("Invalid credentials");
+      } else {
+        res.send("Login successful");
       }
     }
-
-    const newUser = new User(body);
-    newUser.save();
-    res.send("User added successfully");
   } catch (err) {
-    res.send(err.message);
+    res.status(400).send("Error" + err.message);
   }
 });
 
@@ -76,23 +97,26 @@ app.delete("/user", async (req, res) => {
 app.patch("/user", async (req, res) => {
   const userId = req.body._id;
   const body = req.body;
-  try {
-    const allowedFields = [
-      "firstName",
-      "lastName",
-      "password",
-      "age",
-      "gender",
-      "bio",
-      "profilePic",
-      "skills",
-    ];
+  const allowedFields = [
+    "firstName",
+    "lastName",
+    "password",
+    "age",
+    "gender",
+    "bio",
+    "profilePic",
+    "skills",
+  ];
 
-  
+  try {
     for (const key of Object.keys(body)) {
       if (!allowedFields.includes(key) && key !== "_id") {
         throw new Error(`Field ${key} is not allowed`);
       }
+    }
+
+    if (body.skills.length > 5) {
+      throw new Error("Cannot add more than 5 skills");
     }
 
     const user = await User.findByIdAndUpdate(userId, body, { new: true });

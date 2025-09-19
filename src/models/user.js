@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema(
     lastName: {
       type: String,
       required: true,
-      minLength: 5,
+      minLength: 2,
       maxLength: 50,
       trim: true,
     },
@@ -24,17 +24,15 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      validate(value) {
+      validate: (value) => {
         if (!validator.isEmail(value)) {
-          throw new Error("Invalid email");
+          throw new Error("Invalid email address");
         }
       },
     },
     password: {
       type: String,
       required: true,
-      minLength: 8,
-      maxLength: 50,
       trim: true,
       validate(value) {
         if (!validator.isStrongPassword(value)) {
@@ -61,7 +59,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("Invalid URL");
+        }
+      },
     },
+
     skills: [],
   },
   {
